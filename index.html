@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- GLOBAL CONFIGURATION LAYER: PASTE YOUR KEY RIGHT HERE -->
+    <script>
+        const SUPABASE_URL = "https://yxcqplfefguwjalficpa.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_lF9WjM4gQaW_tSGANgBGKg_g1quPlQY";
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISMD Invitation Engine</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #fbbf24;
+            --accent-hover: #f59e0b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #334155;
+            --radius: 12px;
+            --input-bg: #020617;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            margin: auto;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px -5px rgba(0,0,0,0.5);
+        }
+
+        h1 { font-size: 1.6rem; margin-bottom: 1.5rem; color: var(--accent); letter-spacing: -0.025em; text-transform: uppercase; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 0.4rem; font-weight: 600; }
+        
+        input, select, textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { background: var(--accent-hover); }
+        .btn-secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 10px; }
+        .btn-disabled { opacity: 0.3; pointer-events: none; }
+
+        /* Invitee Card Elements */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .event-title { font-size: 2.2rem; line-height: 1.1; margin-bottom: 0.5rem; color: var(--text-main); }
+        .host-line { color: var(--text-dim); margin-bottom: 1.5rem; font-size: 1rem; }
+        
+        .details-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .detail-item { margin-bottom: 8px; font-size: 10.5pt; }
+        .detail-item:last-child { margin-bottom: 0; }
+
+        .greeting-box {
+            font-style: italic;
+            color: var(--text-dim);
+            background: rgba(148, 163, 184, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 12px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+            font-size: 10.5pt;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .time-pill {
+            padding: 12px 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            font-size: 10pt;
+            transition: all 0.2s;
+        }
+
+        .time-pill.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .actions-row { display: flex; gap: 10px; margin-top: 1rem; }
+
+        .hidden { display: none !important; }
+        
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #000; padding: 10px 24px;
+            border-radius: 20px; font-weight: bold; font-size: 0.9rem;
+            display: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- CREATOR WORKSPACE -->
+        <div id="creator-view" class="card">
+            <h1>DISMD Engine Config</h1>
+            
+            <div class="form-group">
+                <label>Event Title</label>
+                <input type="text" id="cfg-title" placeholder="e.g. Bros Before Hos Mandalorian Movie Night">
+            </div>
+
+            <div class="form-group">
+                <label>Event Type</label>
+                <select id="cfg-type">
+                    <option value="Movie Night">🎬 Movie Night</option>
+                    <option value="Meeting">🤝 Meeting</option>
+                    <option value="Birthday Party">🎂 Birthday Party</option>
+                    <option value="Dinner">🍽️ Dinner</option>
+                    <option value="Custom">✨ Custom Event</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Organizer Name</label>
+                <input type="text" id="cfg-name" placeholder="Ralph Torres">
+            </div>
+
+            <div class="form-group">
+                <label>Organizer Phone</label>
+                <input type="text" id="cfg-phone" placeholder="432-703-3096">
+            </div>
+
+            <div class="form-group">
+                <label>Organizer Email</label>
+                <input type="text" id="cfg-email" placeholder="ralphtorres736@gmail.com">
+            </div>
+
+            <div class="form-group">
+                <label>Clean Date Text</label>
+                <input type="text" id="cfg-date" placeholder="e.g. Tuesday, May 26th">
+            </div>
+
+            <div class="form-group">
+                <label>Clean Location/Venue</label>
+                <input type="text" id="cfg-location" placeholder="e.g. Cinemark Century Odessa 12">
+            </div>
+
+            <div class="form-group">
+                <label>Custom Invitation Greeting / Notes</label>
+                <textarea id="cfg-greeting" rows="3" placeholder="Hey bros! Check out the options below and select the time slot that works best for your schedule..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Raw Copy-Pasted Showtimes Text</label>
+                <textarea id="cfg-raw" rows="4" placeholder="Paste theater schedules, lists, or smashed text here (e.g., 1:55pm8:15pm)..."></textarea>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <button class="btn" onclick="publishToSupabase()">Generate & Publish Permanent Link</button>
+            </div>
+        </div>
+
+        <!-- INVITATION VIEW -->
+        <div id="invite-view" class="card hidden" style="text-align: center;">
+            <div id="out-badge" class="badge">Invitation</div>
+            <h1 id="out-title" class="event-title">...</h1>
+            <p class="host-line">Hosted by <span id="out-name" style="color: var(--text-main); font-weight:600;">...</span></p>
+            
+            <div class="details-box">
+                <div class="detail-item">📅 <b>DATE:</b> <span id="out-date">...</span></div>
+                <div class="detail-item">📍 <b>LOCATION:</b> <span id="out-location">...</span></div>
+            </div>
+
+            <div id="out-greeting" class="greeting-box">...</div>
+            
+            <p style="font-size: 0.9rem; color: var(--text-dim); text-align: left; margin-bottom: 0.5rem; font-weight: 600;">SELECT YOUR PREFERRED TIME:</p>
+            <div id="time-selector" class="time-grid"></div>
+
+            <div id="rsvp-actions" class="actions-row btn-disabled">
+                <a id="sms-btn" href="#" class="btn">RSVP via Text</a>
+                <a id="email-btn" href="#" class="btn">RSVP via Email</a>
+            </div>
+            
+            <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 1.5rem;">Select a time slot above to unlock communication routing.</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Link Copied!</div>
+
+    <script>
+        let selectedEventData = null;
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if (id) {
+                try {
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/invitations?id=eq.${id}`, {
+                        headers: {
+                            "apikey": SUPABASE_ANON_KEY,
+                            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        renderInvitation(data[0]);
+                    } else {
+                        alert("Invitation asset not found in database registry.");
+                    }
+                } catch (err) {
+                    console.error("Database fetch exception:", err);
+                }
+            }
+        };
+
+        async function publishToSupabase() {
+            const payload = {
+                title: document.getElementById('cfg-title').value,
+                type: document.getElementById('cfg-type').value,
+                name: document.getElementById('cfg-name').value,
+                phone: document.getElementById('cfg-phone').value,
+                email: document.getElementById('cfg-email').value,
+                date_text: document.getElementById('cfg-date').value,
+                location_text: document.getElementById('cfg-location').value,
+                greeting: document.getElementById('cfg-greeting').value,
+                raw_showtimes: document.getElementById('cfg-raw').value
+            };
+
+            if (!payload.title || !payload.name) {
+                alert("Please declare an Event Title and Organizer Name minimum.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/invitations`, {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_ANON_KEY,
+                        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=representation"
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result && result.length > 0) {
+                    const generatedId = result[0].id;
+                    const cleanUrl = `${window.location.origin}${window.location.pathname}?id=${generatedId}`;
+                    
+                    navigator.clipboard.writeText(cleanUrl);
+                    showToast("Short Link Copied to Clipboard!");
+                }
+            } catch (err) {
+                console.error("Database persistence exception:", err);
+                alert("Publication failed. Verify database network status.");
+            }
+        }
+
+        function renderInvitation(data) {
+            selectedEventData = data;
+            document.getElementById('creator-view').classList.add('hidden');
+            document.getElementById('invite-view').classList.remove('hidden');
+            
+            document.getElementById('out-title').innerText = data.title;
+            document.getElementById('out-badge').innerText = data.type;
+            document.getElementById('out-name').innerText = data.name;
+            document.getElementById('out-date').innerText = data.date_text || "To Be Determined";
+            document.getElementById('out-location').innerText = data.location_text || "To Be Determined";
+            
+            if(data.greeting) {
+                document.getElementById('out-greeting').innerText = data.greeting;
+                document.getElementById('out-greeting').classList.remove('hidden');
+            } else {
+                document.getElementById('out-greeting').classList.add('hidden');
+            }
+
+            const timeContainer = document.getElementById('time-selector');
+            timeContainer.innerHTML = '';
+
+            const timeRegex = /\b((?:[01]?\d|2[0-3]):[0-5]\d\s?(?:am|pm|AM|PM)?|[01]?\d\s?(?:am|pm|AM|PM))\b/g;
+            
+            let normalizedText = data.raw_showtimes.replace(/(pm|am|PM|AM)(\d)/gi, '$1 $2');
+            const matches = [...new Set(normalizedText.match(timeRegex))];
+
+            if (matches.length > 0) {
+                matches.forEach(time => {
+                    const pill = document.createElement('div');
+                    pill.className = 'time-pill';
+                    pill.innerText = time;
+                    pill.onclick = () => selectTime(pill, time);
+                    timeContainer.appendChild(pill);
+                });
+            } else {
+                const pill = document.createElement('div');
+                pill.className = 'time-pill';
+                pill.innerText = "Any Time";
+                pill.onclick = () => selectTime(pill, "the scheduled time");
+                timeContainer.appendChild(pill);
+            }
+        }
+
+        function selectTime(el, time) {
+            document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('rsvp-actions').classList.remove('btn-disabled');
+
+            const textMessage = `Hey ${selectedEventData.name}! Yes, I'd like to go to ${selectedEventData.title}. The ${time} showtime works best for me.`;
+            
+            const smsBtn = document.getElementById('sms-btn');
+            const emailBtn = document.getElementById('email-btn');
+
+            smsBtn.href = `sms:${selectedEventData.phone || ''}?&body=${encodeURIComponent(textMessage)}`;
+            emailBtn.href = `mailto:${selectedEventData.email || ''}?subject=RSVP: ${encodeURIComponent(selectedEventData.title)}&body=${encodeURIComponent(textMessage)}`;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
